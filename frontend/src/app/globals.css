@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* Mapbox GL CSS */
+@import "mapbox-gl/dist/mapbox-gl.css";
+
+/* Custom theme colors */
+:root {
+  --dusty-brown: #8B4513;
+  --dusty-gold: #DAA520;
+  --dusty-cream: #FFF8DC;
+  --dusty-sage: #9CAF88;
+}
+
+/* Base styles */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Map container */
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Sale badge animation */
+@keyframes pulse-sale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.sale-badge {
+  animation: pulse-sale 2s ease-in-out infinite;
+}
+
+/* Shop card hover effect */
+.shop-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shop-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Category pills */
+.category-pill {
+  transition: all 0.2s ease;
+}
+
+.category-pill:hover {
+  transform: scale(1.02);
+}
+
+.category-pill.active {
+  ring: 2px;
+  ring-offset: 2px;
+}

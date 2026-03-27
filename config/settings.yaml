@@ -1,0 +1,131 @@
+# Dusty Configuration
+# Vintage, Antique & Thrift Shop Finder
+
+app:
+  name: Dusty
+  version: 0.1.0
+  description: Discover vintage, antique, and thrift shops with sale tracking
+
+# Default city configuration
+cities:
+  nyc:
+    name: New York City
+    bounds:
+      south: 40.4774
+      west: -74.2591
+      north: 40.9176
+      east: -73.7004
+    center:
+      lat: 40.7128
+      lng: -74.0060
+    default_zoom: 12
+
+# Shop categories
+categories:
+  - id: vintage
+    name: Vintage
+    description: Clothing and items from past eras (20+ years old)
+    icon: clock
+    color: "#8B4513"
+
+  - id: antique
+    name: Antique
+    description: Items 100+ years old, collectibles
+    icon: gem
+    color: "#DAA520"
+
+  - id: thrift
+    name: Thrift Store
+    description: Secondhand goods at budget prices
+    icon: tag
+    color: "#228B22"
+
+  - id: consignment
+    name: High-End Consignment
+    description: Curated secondhand luxury and designer items
+    icon: sparkles
+    color: "#9932CC"
+
+  - id: clothing
+    name: Vintage Clothing
+    description: Specialty vintage fashion boutiques
+    icon: shirt
+    color: "#DC143C"
+
+  - id: furniture
+    name: Vintage Furniture
+    description: Antique and vintage furniture dealers
+    icon: armchair
+    color: "#2F4F4F"
+
+  - id: records
+    name: Record Shops
+    description: Vinyl records and vintage audio
+    icon: disc
+    color: "#1E90FF"
+
+# Data source configurations
+data_sources:
+  google_places:
+    enabled: true
+    search_queries:
+      - "vintage shop"
+      - "antique store"
+      - "thrift store"
+      - "consignment shop"
+      - "vintage clothing"
+      - "secondhand store"
+    radius_meters: 5000
+
+  yelp:
+    enabled: true
+    categories:
+      - vintage
+      - antiques
+      - thrift_stores
+      - usedvintageconsignment
+
+  openstreetmap:
+    enabled: true
+    tags:
+      - shop=antiques
+      - shop=second_hand
+      - shop=charity
+      - shop=vintage
+
+# Sale detection configuration
+sale_detection:
+  instagram:
+    enabled: true
+    keywords:
+      - sale
+      - "% off"
+      - discount
+      - clearance
+      - flash sale
+      - moving sale
+      - estate sale
+      - sample sale
+      - warehouse sale
+
+  website_scraping:
+    enabled: true
+    check_interval_hours: 6
+
+  patterns:
+    - regex: '(\d{1,2})\s*%\s*off'
+      type: percentage_discount
+    - regex: 'sale\s*(ends?|through|until)\s*(\w+\s*\d{1,2})'
+      type: sale_with_date
+    - regex: '(flash|warehouse|sample|estate|moving)\s*sale'
+      type: special_sale
+
+# Scoring weights for shop ranking
+scoring:
+  weights:
+    review_score: 0.25
+    review_count: 0.15
+    sale_activity: 0.20
+    recency: 0.15
+    category_match: 0.15
+    distance: 0.10
