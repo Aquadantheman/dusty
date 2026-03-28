@@ -47,6 +47,9 @@ data/*.parquet
 data/*.json
 !data/.gitkeep
 
+# SQLite database (regenerate with discovery pipeline)
+*.db
+
 # Logs
 *.log
 logs/

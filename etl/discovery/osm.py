@@ -26,11 +26,61 @@ class OSMPlace:
 class OSMDiscovery:
     """Discover vintage/antique shops using OpenStreetMap Overpass API"""
 
-    # Public Overpass API endpoint
-    OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+    # Multiple Overpass API endpoints for load balancing
+    OVERPASS_ENDPOINTS = [
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
+        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    ]
 
     def __init__(self):
-        self.client = httpx.AsyncClient(timeout=60.0)
+        self.client = httpx.AsyncClient(timeout=90.0)
+        self.current_endpoint = 0
+        self.request_count = 0
+
+    def _get_endpoint(self) -> str:
+        """Rotate through endpoints to avoid rate limits"""
+        endpoint = self.OVERPASS_ENDPOINTS[self.current_endpoint]
+        self.current_endpoint = (self.current_endpoint + 1) % len(self.OVERPASS_ENDPOINTS)
+        return endpoint
+
+    async def _request_with_retry(self, query: str, max_retries: int = 3) -> dict:
+        """Make request with retry logic and endpoint rotation"""
+        import asyncio
+
+        for attempt in range(max_retries):
+            endpoint = self._get_endpoint()
+            self.request_count += 1
+
+            # Add delay between requests (longer after more requests)
+            delay = min(2 + (self.request_count * 0.5), 10)
+            await asyncio.sleep(delay)
+
+            try:
+                response = await self.client.post(
+                    endpoint,
+                    data={"data": query},
+                )
+
+                if response.status_code == 200:
+                    return response.json()
+                elif response.status_code == 429:
+                    print(f"  Rate limited on {endpoint}, trying another...")
+                    await asyncio.sleep(5)  # Extra delay on rate limit
+                    continue
+                elif response.status_code == 504:
+                    print(f"  Timeout on {endpoint}, retrying...")
+                    continue
+                else:
+                    print(f"  Error {response.status_code} on {endpoint}")
+                    continue
+
+            except Exception as e:
+                print(f"  Request error: {e}")
+                await asyncio.sleep(2)
+                continue
+
+        return {"elements": []}  # Return empty on all failures
 
     async def search_area(
         self,
@@ -79,16 +129,7 @@ class OSMDiscovery:
         out center;
         """
 
-        response = await self.client.post(
-            self.OVERPASS_URL,
-            data={"data": query},
-        )
-
-        if response.status_code != 200:
-            print(f"Overpass API error: {response.status_code}")
-            return []
-
-        data = response.json()
+        data = await self._request_with_retry(query)
         return [self._parse_element(e) for e in data.get("elements", [])]
 
     async def search_around_point(
@@ -111,15 +152,7 @@ class OSMDiscovery:
         out;
         """
 
-        response = await self.client.post(
-            self.OVERPASS_URL,
-            data={"data": query},
-        )
-
-        if response.status_code != 200:
-            return []
-
-        data = response.json()
+        data = await self._request_with_retry(query)
         return [self._parse_element(e) for e in data.get("elements", [])]
 
     def _parse_element(self, element: dict) -> OSMPlace:

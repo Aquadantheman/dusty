@@ -17,10 +17,10 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler"""
     # Startup
     await init_db()
-    print("🏪 Dusty API starting up...")
+    print("Dusty API starting up...")
     yield
     # Shutdown
-    print("👋 Dusty API shutting down...")
+    print("Dusty API shutting down...")
 
 
 app = FastAPI(
